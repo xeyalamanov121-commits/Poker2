@@ -1,11 +1,9 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="az">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Online Poker Oyunu</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
     <style>
         * {
             margin: 0;
@@ -15,7 +13,7 @@
         
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -24,26 +22,26 @@
         }
         
         .container {
-            background: #0f1419;
+            background: #1a3a52;
             border-radius: 15px;
             padding: 20px;
-            max-width: 500px;
+            max-width: 800px;
             width: 100%;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
-            color: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
         
-        h1 {
+        .title {
             text-align: center;
+            color: #fff;
             margin-bottom: 20px;
-            color: #ffcc00;
+            font-size: 28px;
         }
         
-        .section {
+        .lobby-section, .game-section {
             display: none;
         }
         
-        .section.active {
+        .lobby-section.active, .game-section.active {
             display: block;
         }
         
@@ -51,189 +49,241 @@
             margin-bottom: 15px;
         }
         
-        input, button, select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 10px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
+        label {
+            display: block;
+            color: #fff;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
         
-        input {
-            background: #1e2128;
-            color: white;
-            border: 1px solid #ffcc00;
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e74c3c;
+            border-radius: 5px;
+            font-size: 16px;
         }
         
         button {
-            background: #ffcc00;
-            color: #0f1419;
+            background: #e74c3c;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
             font-weight: bold;
-            transition: 0.3s;
+            margin: 10px 5px 10px 0;
+            transition: background 0.3s;
         }
         
         button:hover {
-            background: #ffdd33;
-            transform: scale(1.02);
+            background: #c0392b;
         }
         
         button:disabled {
-            background: #666;
+            background: #95a5a6;
             cursor: not-allowed;
         }
         
-        .game-table {
-            background: #0a4d0a;
-            border-radius: 10px;
+        .games-list {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .game-item {
+            background: #16213e;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .game-item:hover {
+            background: #1a3a52;
+        }
+        
+        .table {
+            background: #0f7d3f;
+            border-radius: 15px;
             padding: 20px;
-            margin-bottom: 15px;
-            border: 3px solid #ffcc00;
+            margin: 20px 0;
+            position: relative;
+            min-height: 300px;
         }
         
-        .pot {
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
-            color: #ffcc00;
-            margin-bottom: 15px;
-        }
-        
-        .community-cards {
+        .community-cards, .player-cards {
             display: flex;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 15px;
+            margin: 15px 0;
         }
         
         .card {
             background: white;
-            color: #0f1419;
-            width: 50px;
-            height: 70px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            width: 60px;
+            height: 85px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 5px;
             font-weight: bold;
-            text-align: center;
-            font-size: 12px;
+            font-size: 14px;
+            color: #e74c3c;
         }
         
         .card.hidden {
-            background: #0f1419;
-            border: 2px solid #ffcc00;
+            background: #1a1a1a;
+            color: white;
         }
         
-        .player-info {
-            background: #1e2128;
+        .pot-info {
+            text-align: center;
+            color: #fff;
+            font-size: 18px;
+            margin: 15px 0;
+            background: rgba(0,0,0,0.3);
             padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #ffcc00;
+            border-radius: 5px;
         }
         
-        .player-info.current {
-            background: #2a3d2a;
-            border-left: 4px solid #00ff00;
+        .players-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
         }
         
-        .player-list {
-            margin-bottom: 15px;
+        .player-box {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 5px;
+            color: #fff;
+            text-align: center;
+            border: 2px solid transparent;
+        }
+        
+        .player-box.active {
+            border-color: #f1c40f;
+        }
+        
+        .player-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .player-chips {
+            color: #f1c40f;
+            font-size: 14px;
         }
         
         .action-buttons {
             display: flex;
+            justify-content: center;
             gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
         
-        .action-buttons button {
-            flex: 1;
-            padding: 10px;
+        .raise-input {
+            display: none;
         }
         
-        .status {
-            background: #1e2128;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 10px;
+        .raise-input.show {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        
+        .status-message {
+            color: #f1c40f;
             text-align: center;
-            color: #ffcc00;
+            margin: 10px 0;
+            font-weight: bold;
         }
         
         .error {
-            background: #4a0000;
-            color: #ff6666;
+            color: #e74c3c;
         }
         
         .success {
-            background: #004a00;
-            color: #66ff66;
+            color: #2ecc71;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎰 Online Poker</h1>
+        <div class="title">🎰 Online Poker</div>
         
-        <!-- Lobby Section -->
-        <div id="lobbySection" class="section active">
-            <div class="input-group">
-                <input type="text" id="playerName" placeholder="Oyunçu adı" maxlength="15">
-            </div>
-            
-            <div class="input-group">
-                <input type="text" id="gameId" placeholder="Oyun kodu (seçmə)">
-            </div>
-            
-            <button onclick="createGame()">📋 Yeni Oyun Aç</button>
-            <button onclick="joinGame()">🎮 Oyuna Qoşul</button>
-            
-            <div id="lobbyStatus" class="status" style="display: none;"></div>
-            
-            <div class="input-group" style="margin-top: 20px;">
-                <h3 style="margin-bottom: 10px;">Açıq Oyunlar:</h3>
-                <div id="gameList"></div>
+        <!-- LOBBY SECTION -->
+        <div class="lobby-section active">
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: #fff; margin-bottom: 15px;">Oyunçu Adını Daxil Edin:</h3>
+                <div class="input-group">
+                    <input type="text" id="playerName" placeholder="Adınız..." maxlength="20">
+                </div>
+                <button onclick="enterLobby()">Lobiyaya Gir</button>
             </div>
         </div>
         
-        <!-- Game Section -->
-        <div id="gameSection" class="section">
-            <div class="status" id="gameStatus">Qeydlənirsiniz...</div>
-            
-            <div class="game-table">
-                <div class="pot" id="potDisplay">Pot: 0</div>
-                
-                <div class="community-cards" id="communityCards">
-                    <div class="card hidden">?</div>
-                    <div class="card hidden">?</div>
-                    <div class="card hidden">?</div>
-                    <div class="card hidden">?</div>
-                    <div class="card hidden">?</div>
-                </div>
-                
-                <div class="player-list" id="playerList"></div>
+        <!-- GAME SELECTION SECTION -->
+        <div id="gameSelectionSection" style="display: none;">
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #fff; margin-bottom: 15px;">Oyun Seçin:</h3>
+                <button onclick="createNewGame()">🆕 Yeni Oyun Yarat</button>
             </div>
             
-            <div id="yourHand" class="input-group">
-                <h3>Sizin Kartları:</h3>
-                <div class="community-cards" id="handCards"></div>
+            <h3 style="color: #fff; margin-bottom: 15px;">Mövcud Oyunlar:</h3>
+            <div class="games-list" id="gamesList">
+                <p style="color: #aaa; text-align: center;">Oyun axtarılır...</p>
             </div>
             
-            <div class="action-buttons" id="actionButtons" style="display: none;">
-                <button onclick="playerFold()">Əl Burax</button>
-                <button onclick="playerCall()">Call</button>
-                <button onclick="playerRaise()">Raise</button>
-                <button onclick="playerCheck()">Check</button>
+            <button onclick="logoutLobby()" style="margin-top: 20px; background: #95a5a6;">Çıxış</button>
+        </div>
+        
+        <!-- GAME SECTION -->
+        <div class="game-section">
+            <div class="status-message" id="statusMessage"></div>
+            
+            <div class="pot-info">
+                💰 POT: <span id="potAmount">0</span>
             </div>
             
-            <button onclick="leaveGame()" style="margin-top: 10px; background: #cc0000;">❌ Oyundan Çık</button>
+            <div class="table">
+                <div style="color: #fff; margin-bottom: 10px; font-weight: bold;">Cəmiyyət Kartları:</div>
+                <div class="community-cards" id="communityCards"></div>
+            </div>
+            
+            <div style="color: #fff; margin-bottom: 10px; font-weight: bold;">Sizin Kartlarınız:</div>
+            <div class="player-cards" id="playerCards"></div>
+            
+            <div class="players-info" id="playersInfo"></div>
+            
+            <div class="action-buttons" id="actionButtons"></div>
+            
+            <div class="raise-input" id="raiseInput">
+                <input type="number" id="raiseAmount" placeholder="Miktar" min="1">
+                <button onclick="submitRaise()">Raise Et</button>
+                <button onclick="cancelRaise()" style="background: #95a5a6;">Ləğv Et</button>
+            </div>
+            
+            <button onclick="leaveGame()" style="margin-top: 20px; background: #95a5a6; width: 100%;">Oyundan Çıx</button>
         </div>
     </div>
-    
+
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js"></script>
+
     <script>
-        // Firebase Configuration
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBtUtWhDve08YNNpAgH4JnZQYXGWnhYt-c",
             authDomain: "poker-c116f.firebaseapp.com",
@@ -242,205 +292,241 @@
             messagingSenderId: "380423462698",
             appId: "1:380423462698:web:5a2d868df9b0ed10f4c853"
         };
-        
+
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        
+
         let currentPlayer = null;
         let currentGameId = null;
-        let gameRef = null;
-        
-        // Oyun Yaratmaq
-        function createGame() {
+        let gameState = null;
+
+        // Oyunçu Adını Daxil Et
+        function enterLobby() {
             const name = document.getElementById('playerName').value.trim();
             if (!name) {
-                showStatus('Oyunçu adı daxil edin!', 'lobbyStatus', true);
+                alert('Lütfən adınızı daxil edin!');
                 return;
             }
-            
-            const gameId = Math.random().toString(36).substring(7).toUpperCase();
-            currentGameId = gameId;
-            currentPlayer = {
-                name: name,
-                chips: 1000,
-                hand: [],
-                bet: 0,
-                status: 'waiting'
-            };
-            
-            db.ref('games/' + gameId).set({
-                gameId: gameId,
-                status: 'waiting',
-                pot: 0,
-                players: {
-                    [name]: currentPlayer
-                },
-                createdAt: new Date().getTime()
-            }).then(() => {
-                showStatus('Oyun açıldı: ' + gameId, 'lobbyStatus', false);
-                setTimeout(() => {
-                    document.getElementById('lobbySection').classList.remove('active');
-                    document.getElementById('gameSection').classList.add('active');
-                    watchGame();
-                }, 1500);
-            });
+            currentPlayer = { name, id: generateId() };
+            document.querySelector('.lobby-section').classList.remove('active');
+            document.getElementById('gameSelectionSection').style.display = 'block';
+            loadAvailableGames();
         }
-        
-        // Oyuna Qoşulmaq
-        function joinGame() {
-            const name = document.getElementById('playerName').value.trim();
-            const gameId = document.getElementById('gameId').value.trim().toUpperCase();
-            
-            if (!name || !gameId) {
-                showStatus('Adı və oyun kodunu daxil edin!', 'lobbyStatus', true);
-                return;
-            }
-            
-            currentGameId = gameId;
-            currentPlayer = {
-                name: name,
-                chips: 1000,
-                hand: [],
-                bet: 0,
-                status: 'waiting'
-            };
-            
-            db.ref('games/' + gameId + '/players/' + name).set(currentPlayer).then(() => {
-                document.getElementById('lobbySection').classList.remove('active');
-                document.getElementById('gameSection').classList.add('active');
-                watchGame();
-            }).catch(err => {
-                showStatus('Oyun tapılmadı!', 'lobbyStatus', true);
-            });
-        }
-        
-        // Oyunu Gözləmək
-        function watchGame() {
-            gameRef = db.ref('games/' + currentGameId);
-            
-            gameRef.on('value', (snapshot) => {
-                const game = snapshot.val();
-                if (!game) return;
+
+        // Mövcud Oyunları Yükləyin
+        function loadAvailableGames() {
+            db.ref('games').on('value', (snapshot) => {
+                const gamesList = document.getElementById('gamesList');
+                const games = snapshot.val();
                 
-                updateGameDisplay(game);
+                if (!games) {
+                    gamesList.innerHTML = '<p style="color: #aaa; text-align: center;">Oyun yoxdur</p>';
+                    return;
+                }
+
+                gamesList.innerHTML = '';
+                Object.keys(games).forEach(gameId => {
+                    const game = games[gameId];
+                    if (game.status === 'waiting' && game.players.length < 6) {
+                        const gameItem = document.createElement('div');
+                        gameItem.className = 'game-item';
+                        gameItem.innerHTML = `
+                            <strong>Oyun ${gameId.substring(0,6)}</strong><br>
+                            Oyunçular: ${game.players.length}/6
+                        `;
+                        gameItem.onclick = () => joinGame(gameId);
+                        gamesList.appendChild(gameItem);
+                    }
+                });
             });
         }
-        
-        // Oyun Ekranını Yeniləmək
-        function updateGameDisplay(game) {
-            // Pot-u Göstər
-            document.getElementById('potDisplay').textContent = 'Pot: ' + (game.pot || 0);
+
+        // Yeni Oyun Yarat
+        function createNewGame() {
+            const gameId = generateId();
+            const gameData = {
+                status: 'waiting',
+                players: [currentPlayer],
+                deck: shuffleDeck(createDeck()),
+                pot: 0,
+                communityCards: [],
+                currentBet: 10,
+                round: 'pre-flop',
+                createdAt: new Date().getTime()
+            };
             
-            // Oyunçuları Göstər
-            let playerListHTML = '';
-            Object.values(game.players || {}).forEach(p => {
-                const isCurrent = p.name === currentPlayer.name;
-                playerListHTML += `
-                    <div class="player-info ${isCurrent ? 'current' : ''}">
-                        <strong>${p.name}</strong> - Chips: ${p.chips} | Bet: ${p.bet}
+            db.ref('games/' + gameId).set(gameData, (error) => {
+                if (error) {
+                    alert('Oyun yaratmada xəta: ' + error.message);
+                } else {
+                    joinGame(gameId);
+                }
+            });
+        }
+
+        // Oyuna Qoşul
+        function joinGame(gameId) {
+            db.ref('games/' + gameId + '/players').once('value', (snapshot) => {
+                const players = snapshot.val() || [];
+                if (players.length >= 6) {
+                    alert('Oyun dolu!');
+                    return;
+                }
+
+                players.push(currentPlayer);
+                db.ref('games/' + gameId + '/players').set(players);
+                
+                currentGameId = gameId;
+                document.getElementById('gameSelectionSection').style.display = 'none';
+                document.querySelector('.game-section').classList.add('active');
+                
+                watchGame(gameId);
+            });
+        }
+
+        // Oyunu İzləyin
+        function watchGame(gameId) {
+            db.ref('games/' + gameId).on('value', (snapshot) => {
+                gameState = snapshot.val();
+                updateGameUI();
+            });
+        }
+
+        // Oyun UI'ni Yeniləyin
+        function updateGameUI() {
+            if (!gameState) return;
+
+            // Pot
+            document.getElementById('potAmount').textContent = gameState.pot || 0;
+
+            // Cəmiyyət Kartları
+            const commCards = document.getElementById('communityCards');
+            commCards.innerHTML = '';
+            (gameState.communityCards || []).forEach(card => {
+                commCards.innerHTML += `<div class="card">${card}</div>`;
+            });
+
+            // Oyunçu Kartları
+            const playerCards = document.getElementById('playerCards');
+            playerCards.innerHTML = '';
+            const myCards = gameState.playerCards?.[currentPlayer.id] || [];
+            myCards.forEach(card => {
+                playerCards.innerHTML += `<div class="card">${card}</div>`;
+            });
+
+            // Oyunçuların Məlumatı
+            const playersInfo = document.getElementById('playersInfo');
+            playersInfo.innerHTML = '';
+            (gameState.players || []).forEach(player => {
+                const isActive = gameState.activePlayer === player.id;
+                playersInfo.innerHTML += `
+                    <div class="player-box ${isActive ? 'active' : ''}">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-chips">💰 ${player.chips || 1000}</div>
                     </div>
                 `;
             });
-            document.getElementById('playerList').innerHTML = playerListHTML;
-            
-            // Statusu Göstər
-            const status = game.status === 'playing' ? '🎮 Oyun Gedir' : '⏳ Gözləniliyor';
-            document.getElementById('gameStatus').textContent = status;
-            
-            // Səhifəni Yenilə
-            if (game.players[currentPlayer.name]?.hand) {
-                updateHandDisplay(game.players[currentPlayer.name].hand);
-            }
-        }
-        
-        // Əl Göstərmə
-        function updateHandDisplay(hand) {
-            let handHTML = '';
-            hand.forEach(card => {
-                handHTML += `<div class="card">${card}</div>`;
-            });
-            document.getElementById('handCards').innerHTML = handHTML;
-        }
-        
-        // Oyundan Çıkmaq
-        function leaveGame() {
-            if (!currentGameId || !currentPlayer) return;
-            
-            db.ref('games/' + currentGameId + '/players/' + currentPlayer.name).remove();
-            currentGameId = null;
-            currentPlayer = null;
-            
-            document.getElementById('gameSection').classList.remove('active');
-            document.getElementById('lobbySection').classList.add('active');
-        }
-        
-        // Əl Buraxmaq
-        function playerFold() {
-            updatePlayerStatus('folded');
-            showStatus('Əli burdunuz', 'gameStatus');
-        }
-        
-        // Call Etmək
-        function playerCall() {
-            updatePlayerStatus('called');
-            showStatus('Call etdiniz', 'gameStatus');
-        }
-        
-        // Raise Etmək
-        function playerRaise() {
-            updatePlayerStatus('raised');
-            showStatus('Raise etdiniz', 'gameStatus');
-        }
-        
-        // Check Etmək
-        function playerCheck() {
-            updatePlayerStatus('checked');
-            showStatus('Check etdiniz', 'gameStatus');
-        }
-        
-        function updatePlayerStatus(action) {
-            if (!currentGameId || !currentPlayer) return;
-            db.ref('games/' + currentGameId + '/players/' + currentPlayer.name).update({
-                status: action
-            });
-        }
-        
-        // Status Göstərmə
-        function showStatus(message, elementId, isError = false) {
-            const el = document.getElementById(elementId);
-            el.textContent = message;
-            el.style.display = 'block';
-            el.className = 'status ' + (isError ? 'error' : 'success');
-            
-            setTimeout(() => {
-                el.style.display = 'none';
-            }, 3000);
-        }
-        
-        // Açıq Oyunları Yüklə
-        window.addEventListener('load', () => {
-            db.ref('games').on('value', (snapshot) => {
-                let gameHTML = '';
-                Object.values(snapshot.val() || {}).forEach(game => {
-                    if (game.status === 'waiting') {
-                        gameHTML += `
-                            <div style="background: #1e2128; padding: 10px; margin: 5px 0; border-radius: 5px; border-left: 4px solid #ffcc00;">
-                                <strong>Kod: ${game.gameId}</strong><br>
-                                Oyunçular: ${Object.keys(game.players || {}).length}<br>
-                                <button onclick="document.getElementById('gameId').value = '${game.gameId}';" style="margin-top: 5px;">Seç</button>
-                            </div>
-                        `;
-                    }
-                });
-                if (gameHTML) {
-                    document.getElementById('gameList').innerHTML = gameHTML;
-                } else {
-                    document.getElementById('gameList').innerHTML = '<p style="color: #666;">Açıq oyun yoxdur</p>';
-                }
-            });
-        });
-    </script>
-</body>
-</html>
 
+            // Düymələr
+            updateActionButtons();
+        }
+
+        // Səs Düymələrini Yeniləyin
+        function updateActionButtons() {
+            const buttons = document.getElementById('actionButtons');
+            buttons.innerHTML = '';
+
+            if (gameState.activePlayer !== currentPlayer.id) {
+                buttons.innerHTML = '<p style="color: #fff;">Digər oyunçunun növbəsi...</p>';
+                return;
+            }
+
+            buttons.innerHTML += '<button onclick="foldGame()">Fold</button>';
+            buttons.innerHTML += '<button onclick="callGame()">Call</button>';
+            buttons.innerHTML += '<button onclick="raiseGame()">Raise</button>';
+        }
+
+        // Fold
+        function foldGame() {
+            db.ref('games/' + currentGameId + '/playerActions/' + currentPlayer.id).set('fold');
+            nextPlayer();
+        }
+
+        // Call
+        function callGame() {
+            db.ref('games/' + currentGameId + '/playerActions/' + currentPlayer.id).set('call');
+            nextPlayer();
+        }
+
+        // Raise
+        function raiseGame() {
+            document.getElementById('raiseInput').classList.add('show');
+        }
+
+        function submitRaise() {
+            const amount = parseInt(document.getElementById('raiseAmount').value);
+            if (isNaN(amount) || amount <= 0) {
+                alert('Düzgün miktar daxil edin!');
+                return;
+            }
+            db.ref('games/' + currentGameId + '/playerActions/' + currentPlayer.id).set({
+                action: 'raise',
+                amount: amount
+            });
+            document.getElementById('raiseInput').classList.remove('show');
+            nextPlayer();
+        }
+
+        function cancelRaise() {
+            document.getElementById('raiseInput').classList.remove('show');
+        }
+
+        // Sonrakı Oyunçu
+        function nextPlayer() {
+            const players = gameState.players || [];
+            const currentIndex = players.findIndex(p => p.id === gameState.activePlayer);
+            const nextIndex = (currentIndex + 1) % players.length;
+            db.ref('games/' + currentGameId + '/activePlayer').set(players[nextIndex].id);
+        }
+
+        // Oyundan Çıx
+        function leaveGame() {
+            db.ref('games/' + currentGameId).remove(() => {
+                currentGameId = null;
+                document.querySelector('.game-section').classList.remove('active');
+                document.getElementById('gameSelectionSection').style.display = 'block';
+                loadAvailableGames();
+            });
+        }
+
+        // Lobiyadan Çıx
+        function logoutLobby() {
+            currentPlayer = null;
+            document.querySelector('.lobby-section').classList.add('active');
+            document.getElementById('gameSelectionSection').style.display = 'none';
+            document.getElementById('playerName').value = '';
+        }
+
+        // Köməkçi Funksiyalar
+        function generateId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        function createDeck() {
+            const suits = ['♠', '♥', '♦', '♣'];
+            const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+            const deck = [];
+            for (let suit of suits) {
+                for (let rank of ranks) {
+                    deck.push(rank + suit);
+                }
+            }
+            return deck;
+        }
+
+        function shuffleDeck(deck) {
+            const newDeck = [...deck];
+            for (let i = newDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newDeck[i], newDeck[j]] = [
