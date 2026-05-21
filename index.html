@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Texas Hold'em - Premium</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;700&display=swap');
+    
+    body {
+      margin: 0; padding: 0; background: linear-gradient(135deg, #0a1f0a, #04100a);
+      color: #fff; font-family: 'Roboto', sans-serif; overflow: hidden;
+    }
+    header {
+      background: rgba(0,0,0,0.85); padding: 18px; text-align: center;
+      border-bottom: 4px solid #ffd700;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif; color: #ffd700; margin: 0; font-size: 2.8em;
+      text-shadow: 0 0 20px #ffd700;
+    }
+    #table {
+      width: 94%; max-width: 1250px; height: 580px; margin: 25px auto;
+      background: radial-gradient(circle at center, #008833 0%, #003322 70%);
+      border: 28px solid #3d2308; border-radius: 50% 50% 45% 45%;
+      position: relative; box-shadow: 0 0 90px rgba(255,215,0,0.6), inset 0 0 80px rgba(0,0,0,0.9);
+    }
+    .card {
+      width: 78px; height: 110px; background: white; border-radius: 10px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 34px; font-weight: bold; margin: 8px; box-shadow: 0 8px 15px rgba(0,0,0,0.7);
+      border: 3px solid #111;
+    }
+    .red { color: #c41e3a; }
+    .player {
+      position: absolute; background: rgba(0,0,0,0.8); padding: 12px 20px;
+      border-radius: 18px; border: 3px solid #ffd700; text-align: center;
+      box-shadow: 0 0 25px rgba(255,215,0,0.5);
+    }
+    button {
+      padding: 16px 32px; margin: 10px; font-size: 19px; font-weight: bold;
+      border: none; border-radius: 50px; cursor: pointer; transition: 0.3s;
+    }
+    .btn-gold { background: linear-gradient(#ffd700, #b8860b); color: black; }
+    .btn-red { background: #c41e3a; color: white; }
+    button:hover { transform: scale(1.1); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TEXAS HOLD'EM</h1>
+    <p style="color:#ccc; margin:8px;">Online Premium</p>
+  </header>
+
+  <div id="menu">
+    <div style="max-width:420px; margin:80px auto; background:rgba(0,0,0,0.75); padding:50px 30px; border-radius:25px; border:3px solid #ffd700;">
+      <input id="name" value="Vanqa" style="width:100%; padding:16px; font-size:20px; margin-bottom:25px; border-radius:12px; border:none;">
+      <button class="btn-gold" onclick="createRoom()" style="width:100%; padding:20px; font-size:22px;">🃏 Yeni Otaq Yarat</button>
+      <button onclick="showJoin()" style="width:100%; padding:20px; font-size:22px; background:#0066cc; color:white;">🔗 Otağa Qoşul</button>
+    </div>
+  </div>
+
+  <div id="joinScreen" style="display:none; max-width:420px; margin:100px auto; padding:40px; background:rgba(0,0,0,0.8); border-radius:25px; border:3px solid #ffd700;">
+    <input id="roomId" placeholder="Otaq ID (məs: POKER8742)" style="width:100%; padding:16px; font-size:20px; margin-bottom:20px;">
+    <button class="btn-gold" onclick="joinRoom()" style="width:100%; padding:18px;">Qoşul</button>
+  </div>
+
+  <div id="game" style="display:none;">
+    <div id="table">
+      <div id="community" style="position:absolute; top:42%; left:50%; transform:translate(-50%, -50%);"></div>
+      
+      <div id="pot" style="position:absolute; top:25%; left:50%; transform:translateX(-50%);
+                           background:rgba(0,0,0,0.7); padding:12px 40px; border-radius:40px; font-size:26px; color:#ffd700; font-weight:bold;">
+        Pot: $0
+      </div>
+
+      <!-- Sən -->
+      <div class="player" style="bottom:35px; left:50%; transform:translateX(-50%); width:260px;">
+        <p id="myName" style="margin:5px; color:#ffd700; font-size:20px;"></p>
+        <div id="myCards"></div>
+      </div>
+    </div>
+
+    <div style="text-align:center; margin-top:15px;">
+      <button class="btn-red" onclick="fold()">Fold</button>
+      <button class="btn-gold" onclick="call()">Call</button>
+      <button class="btn-gold" onclick="raise()">Raise</button>
+    </div>
+  </div>
+
+  <script>
+    const socket = io(); // Deploydan sonra avtomatik işləyəcək
+    let roomId = null;
+    let myName = "Vanqa";
+
+    function createRoom() {
+      myName = document.getElementById("name").value || "Vanqa";
+      socket.emit("create_room", {name: myName});
+    }
+
+    function showJoin() {
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("joinScreen").style.display = "block";
+    }
+
+    function joinRoom() {
+      roomId = document.getElementById("roomId").value.trim();
+      myName = document.getElementById("name").value || "Vanqa";
+      if (roomId) socket.emit("join_room", {room_id: roomId, name: myName});
+    }
+
+    socket.on("room_created", (data) => {
+      roomId = data.room_id;
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("game").style.display = "block";
+      document.getElementById("myName").innerText = myName + " (Sən)";
+      alert(`Otaq yaradıldı!\n\nID: ${roomId}\n\nDostlarına göndər!`);
+    });
+
+    socket.on("update_players", (data) => {
+      console.log("Oyunçular yeniləndi", data);
+    });
+  </script>
+</body>
+</html>
