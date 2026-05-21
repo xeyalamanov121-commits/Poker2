@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basit Poker Oyunu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: #0d5f4f;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            color: white;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .setup-screen, .game-screen {
+            display: none;
+        }
+        
+        .setup-screen.active, .game-screen.active {
+            display: block;
+        }
+        
+        .setup-screen {
+            text-align: center;
+        }
+        
+        .setup-screen input {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #1a3a3a;
+            color: white;
+        }
+        
+        .setup-screen button {
+            background: #ffd700;
+            color: #0d5f4f;
+            border: none;
+            padding: 12px 40px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        
+        .setup-screen button:hover {
+            background: #ffed4e;
+            transform: scale(1.05);
+        }
+        
+        .game-board {
+            background: #0a4a3d;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .pot-info {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.5em;
+        }
+        
+        .pot-info strong {
+            color: #ffd700;
+            font-size: 2em;
+        }
+        
+        .community-cards {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px 0;
+        }
+        
+        .card {
+            width: 80px;
+            height: 120px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #0d5f4f;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .card.hidden {
+            background: linear-gradient(45deg, #ff6b6b, #ff8787);
+            color: white;
+        }
+        
+        .players-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .player-card {
+            background: #1a3a3a;
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .player-card.active {
+            border-color: #00ff00;
+            background: #1a4a3a;
+        }
+        
+        .player-card.folded {
+            opacity: 0.5;
+            border-color: #888;
+        }
+        
+        .player-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .player-chips {
+            color: #ffd700;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .player-hand {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .round-stage {
+            text-align: center;
+            font-size: 1.3em;
+            color: #ffd700;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .actions button {
+            background: #ffd700;
+            color: #0d5f4f;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        
+        .actions button:hover {
+            background: #ffed4e;
+            transform: scale(1.05);
+        }
+        
+        .actions button:disabled {
+            background: #888;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .raise-input {
+            padding: 8px;
+            border-radius: 6px;
+            border: 2px solid #ffd700;
+            background: #1a3a3a;
+            color: white;
+            width: 100px;
+        }
+        
+        .message {
+            text-align: center;
+            font-size: 1.2em;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background: #1a3a3a;
+            color: #ffd700;
+        }
+        
+        .message.winner {
+            background: #2d5a2d;
+            color: #00ff00;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+        
+        .reset-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .reset-btn:hover {
+            background: #ff8787;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎰 POKER OYUNU</h1>
+        
+        <!-- Oyun Başlangıç Ekranı -->
+        <div class="setup-screen active">
+            <h2 style="color: #ffd700; margin-bottom: 30px;">Oyun Ayarları</h2>
+            <input type="number" id="numPlayers" placeholder="Oyuncu Sayısı (2-6)" min="2" max="6" value="2">
+            <input type="number" id="startingChips" placeholder="Başlangıç Chip'i" min="100" value="1000">
+            <button onclick="startGame()">OYUNU BAŞLAT</button>
+        </div>
+        
+        <!-- Oyun Ekranı -->
+        <div class="game-screen">
+            <div class="pot-info">
+                POT: <strong id="potAmount">0</strong>
+            </div>
+            
+            <div class="game-board">
+                <div class="round-stage" id="roundStage">PRE-FLOP</div>
+                
+                <div class="community-cards" id="communityCards">
+                    <div class="card hidden">?</div>
+                    <div class="card hidden">?</div>
+                    <div class="card hidden">?</div>
+                    <div class="card hidden">?</div>
+                    <div class="card hidden">?</div>
+                </div>
+                
+                <div class="message" id="message" style="display: none;"></div>
+            </div>
+            
+            <div class="players-info" id="playersInfo"></div>
+            
+            <div class="actions">
+                <button onclick="playerAction('fold')">ÇEKIL</button>
+                <button onclick="playerAction('call')">EŞITLE</button>
+                <input type="number" id="raiseAmount" class="raise-input" placeholder="Miktar" min="1">
+                <button onclick="playerAction('raise')">YÜKSELT</button>
+                <button onclick="nextRound()" style="background: #00ff00; color: #0d5f4f;">DEVAM ET</button>
+            </div>
+            
+            <button class="reset-btn" onclick="resetGame()">YENİ OYUN</button>
+        </div>
+    </div>
+    
+    <script>
+        let game = {
+            players: [],
+            pot: 0,
+            currentBet: 0,
+            communityCards: [],
+            currentRound: 'pre-flop',
+            gameRunning: false
+        };
+        
+        const suits = ['♠', '♥', '♦', '♣'];
+        const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        
+        function createDeck() {
+            let deck = [];
+            for (let suit of suits) {
+                for (let rank of ranks) {
+                    deck.push(rank + suit);
+                }
+            }
+            return deck.sort(() => Math.random() - 0.5);
+        }
+        
+        function startGame() {
+            const numPlayers = parseInt(document.getElementById('numPlayers').value);
+            const startingChips = parseInt(document.getElementById('startingChips').value);
+            
+            if (numPlayers < 2 || numPlayers > 6) {
+                alert('Oyuncu sayısı 2-6 arasında olmalıdır!');
+                return;
+            }
+            
+            game.players = [];
+            for (let i = 0; i < numPlayers; i++) {
+                game.players.push({
+                    id: i,
+                    name: `Oyuncu ${i + 1}`,
+                    chips: startingChips,
+                    hand: [],
+                    folded: false,
+                    currentBet: 0
+                });
+            }
+            
+            game.pot = 0;
+            game.currentBet = 100;
+            game.currentRound = 'pre-flop';
+            game.gameRunning = true;
+            
+            document.querySelector('.setup-screen').classList.remove('active');
+            document.querySelector('.game-screen').classList.add('active');
+            
+            dealCards();
+            updateUI();
+        }
+        
+        function dealCards() {
+            let deck = createDeck();
+            game.communityCards = [];
+            
+            for (let player of game.players) {
+                player.hand = [deck.pop(), deck.pop()];
+                player.folded = false;
+                player.currentBet = 0;
+            }
+        }
+        
+        function playerAction(action) {
+            if (action === 'fold') {
+                game.players[0].folded = true;
+                showMessage('Çekildiler!');
+            } else if (action === 'call') {
+                let bet = Math.min(game.currentBet, game.players[0].chips);
+                game.players[0].chips -= bet;
+                game.pot += bet;
+                showMessage(`${bet} chip eşitlediler!`);
+            } else if (action === 'raise') {
+                let amount = parseInt(document.getElementById('raiseAmount').value) || 0;
+                if (amount > game.players[0].chips) {
+                    alert('Yeterli chip'iniz yok!');
+                    return;
+                }
+                game.players[0].chips -= amount;
+                game.pot += amount;
+                game.currentBet = amount;
+                showMessage(`${amount} chip yükseltti!`);
+                document.getElementById('raiseAmount').value = '';
+            }
+            updateUI();
+        }
+        
+        function nextRound() {
+            const rounds = ['pre-flop', 'flop', 'turn', 'river', 'showdown'];
+            const currentIndex = rounds.indexOf(game.currentRound);
+            
+            if (currentIndex < 4) {
+                game.currentRound = rounds[currentIndex + 1];
+                
+                if (game.currentRound === 'flop') {
+                    game.communityCards = ['K♥', 'Q♦', 'J♠'];
+                } else if (game.currentRound === 'turn') {
+                    game.communityCards.push('10♣');
+                } else if (game.currentRound === 'river') {
+                    game.communityCards.push('9♥');
+                } else if (game.currentRound === 'showdown') {
+                    determineWinner();
+                }
+                
+                updateUI();
+            } else {
+                resetRound();
+            }
+        }
+        
+        function determineWinner() {
+            let activePlayers = game.players.filter(p => !p.folded);
+            
+            if (activePlayers.length === 1) {
+                let winner = activePlayers[0];
+                winner.chips += game.pot;
+                showMessage(`🎉 ${winner.name} KAZANDI!`, 'winner');
+            } else {
+                let winner = activePlayers[0];
+                winner.chips += game.pot;
+                showMessage(`🎉 ${winner.name} KAZANDI!`, 'winner');
+            }
+        }
+        
+        function resetRound() {
+            game.pot = 0;
+            game.currentBet = 100;
+            game.currentRound = 'pre-flop';
+            game.communityCards = [];
+            dealCards();
+            document.getElementById('message').style.display = 'none';
+            updateUI();
+        }
+        
+        function resetGame() {
+            document.querySelector('.setup-screen').classList.add('active');
+            document.querySelector('.game-screen').classList.remove('active');
+            game.gameRunning = false;
+        }
+        
+        function showMessage(text, type = '') {
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = text;
+            msgEl.className = 'message ' + type;
+            msgEl.style.display = 'block';
+        }
+        
+        function updateUI() {
+            // Pot güncelle
+            document.getElementById('potAmount').textContent = game.pot;
+            
+            // Round stage güncelle
+            const stageMap = {
+                'pre-flop': 'PRE-FLOP',
+                'flop': 'FLOP',
+                'turn': 'TURN',
+                'river': 'RIVER',
+                'showdown': 'SHOWDOWN'
+            };
+            document.getElementById('roundStage').textContent = stageMap[game.currentRound];
+            
+            // Ortak kartları göster
+            const cardsEl = document.getElementById('communityCards');
+            cardsEl.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                if (game.communityCards[i]) {
+                    cardEl.textContent = game.communityCards[i];
+                    cardEl.classList.remove('hidden');
+                } else {
+                    cardEl.innerHTML = '?';
+                    cardEl.classList.add('hidden');
+                }
+                cardsEl.appendChild(cardEl);
+            }
+            
+            // Oyuncu bilgilerini güncelle
+            const playersEl = document.getElementById('playersInfo');
+            playersEl.innerHTML = '';
+            for (let player of game.players) {
+                const playerCard = document.createElement('div');
+                playerCard.className = 'player-card' + (player.folded ? ' folded' : '') + (player.id === 0 ? ' active' : '');
+                playerCard.innerHTML = `
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-chips">Chip: ${player.chips}</div>
+                    <div class="player-hand">${player.hand.map(c => `<div class="card">${c}</div>`).join('')}</div>
+                    ${player.folded ? '<div style="color: #888; margin-top: 10px;">ÇEKİLDİ</div>' : ''}
+                `;
+                playersEl.appendChild(playerCard);
+            }
+        }
+    </script>
+</body>
+</html>
