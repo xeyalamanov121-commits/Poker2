@@ -1,445 +1,508 @@
 <!DOCTYPE html>
-<html lang="az">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Poker</title>
+    <title>Online Poker Oyunu</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            color: white;
         }
-        
+
         .container {
-            background: #1a3a52;
-            border-radius: 15px;
-            padding: 20px;
-            max-width: 900px;
             width: 100%;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-width: 600px;
+            padding: 20px;
         }
-        
-        .title {
-            text-align: center;
-            color: #fff;
-            margin-bottom: 20px;
-            font-size: 28px;
-        }
-        
+
         .screen {
             display: none;
+            animation: fadeIn 0.5s ease-in;
         }
-        
+
         .screen.active {
             display: block;
         }
-        
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-        
-        label {
-            display: block;
-            color: #fff;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        
-        input {
+
+        input, select {
             width: 100%;
-            padding: 10px;
-            border: 2px solid #e74c3c;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        
-        button {
-            background: #e74c3c;
-            color: white;
-            padding: 12px 20px;
+            padding: 12px;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 1em;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
             font-weight: bold;
-            margin: 10px 5px 10px 0;
-            transition: background 0.3s;
-        }
-        
-        button:hover {
-            background: #c0392b;
-        }
-        
-        button:disabled {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-        
-        .games-list {
-            background: #0f3460;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .game-item {
-            background: #16213e;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            color: #fff;
             cursor: pointer;
-            border-left: 4px solid #e74c3c;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            transition: all 0.3s;
+            margin-top: 10px;
         }
-        
-        .game-item:hover {
-            background: #1a3a52;
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
         }
-        
-        .table {
-            background: #0f7d3f;
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .game-board {
+            background: rgba(0, 100, 0, 0.3);
             border-radius: 15px;
             padding: 20px;
-            margin: 20px 0;
+            margin-bottom: 20px;
         }
-        
-        .cards-row {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px 0;
-            flex-wrap: wrap;
-        }
-        
-        .card {
-            background: white;
-            border: 2px solid #333;
-            border-radius: 5px;
-            width: 60px;
-            height: 85px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
-            color: #e74c3c;
-        }
-        
-        .pot-info {
-            text-align: center;
-            color: #fff;
-            font-size: 20px;
-            margin: 15px 0;
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
-            border-radius: 5px;
-        }
-        
-        .players-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin: 20px 0;
-        }
-        
-        .player-box {
-            background: #16213e;
+
+        .info-section {
+            background: rgba(255, 255, 255, 0.1);
             padding: 15px;
-            border-radius: 5px;
-            color: #fff;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f5576c;
+        }
+
+        .info-section h3 {
+            margin-bottom: 10px;
+            color: #f5576c;
+        }
+
+        .cards-display {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .card-item {
+            background: white;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.2em;
+            min-width: 50px;
             text-align: center;
-            border: 3px solid transparent;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        
-        .player-box.active {
-            border-color: #f1c40f;
-            background: #1a4d2e;
+
+        .players-list {
+            margin: 15px 0;
         }
-        
+
+        .player-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .player-name {
             font-weight: bold;
-            margin-bottom: 5px;
         }
-        
+
         .player-chips {
-            color: #f1c40f;
-            font-size: 14px;
+            background: rgba(245, 87, 108, 0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
         }
-        
+
         .action-buttons {
-            display: flex;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
-            flex-wrap: wrap;
             margin-top: 20px;
         }
-        
-        .status {
-            color: #f1c40f;
+
+        .action-buttons button {
+            padding: 15px;
+            font-size: 0.9em;
+        }
+
+        .pot-display {
             text-align: center;
+            font-size: 1.5em;
+            margin: 20px 0;
+            background: rgba(255, 215, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid gold;
+        }
+
+        .turn-indicator {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 255, 100, 0.2);
+            border-radius: 8px;
             margin: 10px 0;
-            font-weight: bold;
+            border: 2px solid #00ff64;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #ff6b6b;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 100, 0.2);
+            color: #00ff64;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #00ff64;
+            display: none;
+        }
+
+        .logo {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title">🎰 Online Poker</div>
-        
-        <!-- SCREEN 1: Oyunçu Adı -->
-        <div class="screen active" id="screen1">
-            <h3 style="color: #fff; margin-bottom: 15px;">Oyunçu Adını Daxil Edin:</h3>
-            <div class="input-group">
-                <input type="text" id="playerName" placeholder="Adınız..." maxlength="20">
+    <!-- 🎯 Screen 1: Oyuncu Adı Girişi -->
+    <div class="screen active" id="loginScreen">
+        <div class="container">
+            <div class="card">
+                <div class="logo">🎰</div>
+                <h1>Online Poker</h1>
+                <div class="input-group">
+                    <input type="text" id="playerName" placeholder="Oyuncu Adını Gir" maxlength="20">
+                    <button onclick="setPlayerName()">Devam Et</button>
+                </div>
             </div>
-            <button onclick="screen1_enter()">Lobiyaya Gir</button>
-        </div>
-        
-        <!-- SCREEN 2: Oyun Seçimi -->
-        <div class="screen" id="screen2">
-            <h3 style="color: #fff; margin-bottom: 15px;">Oyun Seçin:</h3>
-            <button onclick="screen2_createGame()">🆕 Yeni Oyun Yarat</button>
-            
-            <h3 style="color: #fff; margin-top: 20px; margin-bottom: 15px;">Mövcud Oyunlar:</h3>
-            <div class="games-list" id="gamesList">
-                <p style="color: #aaa; text-align: center;">Oyun axtarılır...</p>
-            </div>
-            
-            <button onclick="screen2_logout()" style="margin-top: 20px; background: #95a5a6;">Çıxış</button>
-        </div>
-        
-        <!-- SCREEN 3: Oyun -->
-        <div class="screen" id="screen3">
-            <div class="status" id="gameStatus">Oyun başlayır...</div>
-            
-            <div class="pot-info">💰 POT: <span id="potAmount">0</span></div>
-            
-            <div class="table">
-                <div style="color: #fff; margin-bottom: 10px;">Cəmiyyət Kartları:</div>
-                <div class="cards-row" id="communityCards"></div>
-            </div>
-            
-            <div style="color: #fff; margin-bottom: 10px;">Sizin Kartlarınız:</div>
-            <div class="cards-row" id="myCards"></div>
-            
-            <div class="players-grid" id="playersList"></div>
-            
-            <div class="action-buttons" id="actionButtons">
-                <p style="color: #fff;">Lütfən gözləyin...</p>
-            </div>
-            
-            <button onclick="screen3_leave()" style="margin-top: 20px; background: #95a5a6; width: 100%;">Oyundan Çıx</button>
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js"></script>
+    <!-- 🎯 Screen 2: Lobiye Girme / Oyun Seçme -->
+    <div class="screen" id="lobbyScreen">
+        <div class="container">
+            <div class="card">
+                <h1>🎮 Hoş Geldin!</h1>
+                <div class="info-section">
+                    <h3>Oyuncu: <span id="displayPlayerName"></span></h3>
+                    <p>Chip: <span id="displayChips">1000</span> 🪙</p>
+                </div>
+
+                <h3 style="text-align: center; margin-bottom: 20px;">Oyun Seç</h3>
+
+                <button onclick="createNewGame()" style="background: linear-gradient(135deg, #00ff64 0%, #00cc52 100%);">
+                    ➕ Yeni Oyun Oluştur
+                </button>
+
+                <div style="text-align: center; margin: 20px 0; color: #ccc;">- VEYA -</div>
+
+                <div class="input-group">
+                    <input type="text" id="gameCode" placeholder="Oyun Kodunu Gir" maxlength="6">
+                    <button onclick="joinGame()">Oyuna Katıl</button>
+                </div>
+
+                <button onclick="backToLogin()" style="background: rgba(255, 255, 255, 0.2); margin-top: 20px;">
+                    ← Geri Dön
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🎯 Screen 3: Oyun Ekranı -->
+    <div class="screen" id="gameScreen">
+        <div class="container">
+            <div class="game-board">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <h2>🎴 Oyun Kodu: <span id="gameCodeDisplay">-</span></h2>
+                    <p style="color: #ccc; margin-top: 5px;" id="gameStatus">Oyun Başlıyor...</p>
+                </div>
+
+                <div class="turn-indicator">
+                    🎯 Sıra: <span id="currentTurn">-</span>
+                </div>
+
+                <div class="pot-display">
+                    💰 POT: <span id="potDisplay">0</span> 🪙
+                </div>
+
+                <div class="info-section">
+                    <h3>🃏 Topluluk Kartları</h3>
+                    <div class="cards-display" id="communityCards">
+                        <div class="card-item">-</div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>🎲 Senin Kartların</h3>
+                    <div class="cards-display" id="yourCards">
+                        <div class="card-item">-</div>
+                    </div>
+                    <p style="text-align: center; margin-top: 10px;">Senin Chip: <span id="yourChips">0</span> 🪙</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>👥 Oyunçular</h3>
+                    <div class="players-list" id="playersList">
+                        <div class="player-item">
+                            <span class="player-name">Oyuncu Bekleniyor...</span>
+                            <span class="player-chips">0 🪙</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 20px 0;">
+                    <input type="number" id="betAmount" placeholder="Bahis Miktarı" min="0" style="width: 100%; margin-bottom: 10px;">
+                </div>
+
+                <div class="action-buttons">
+                    <button onclick="playerFold()" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);">
+                        ❌ PAS GEÇ
+                    </button>
+                    <button onclick="playerCheck()" style="background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);">
+                        ✅ ÇEK
+                    </button>
+                    <button onclick="playerCall()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        📞 KATIL
+                    </button>
+                    <button onclick="playerRaise()" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        🚀 ARTTIR
+                    </button>
+                </div>
+
+                <button onclick="nextRound()" style="margin-top: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    ⏭️ Sonraki Tur
+                </button>
+
+                <button onclick="endGame()" style="margin-top: 10px; background: rgba(255, 255, 255, 0.2);">
+                    🛑 Oyunu Bitir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
 
     <script>
+        // ⚙️ Firebase Konfigürasyonu
         const firebaseConfig = {
-            apiKey: "AIzaSyBtUtWhDve08YNNpAgH4JnZQYXGWnhYt-c",
-            authDomain: "poker-c116f.firebaseapp.com",
-            projectId: "poker-c116f",
-            storageBucket: "poker-c116f.firebasestorage.app",
-            messagingSenderId: "380423462698",
-            appId: "1:380423462698:web:5a2d868df9b0ed10f4c853"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
+            databaseURL: "YOUR_DATABASE_URL"
         };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let myData = {
-            name: null,
-            id: null,
-            gameId: null
-        };
+        // 🎮 Global Değişkenler
+        let currentPlayer = '';
+        let currentGameCode = '';
+        let playerChips = 1000;
+        let gameChips = 0;
+        let currentTurnPlayer = '';
+        let communityCards = [];
+        let yourCards = [];
+        let gameData = {};
 
-        function showScreen(n) {
+        // 📱 Screen Yönetimi
+        function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById('screen' + n).classList.add('active');
+            document.getElementById(screenId).classList.add('active');
         }
 
-        // SCREEN 1: Adı daxil et
-        function screen1_enter() {
+        // 1️⃣ Oyuncu Adı Ayarla
+        function setPlayerName() {
             const name = document.getElementById('playerName').value.trim();
             if (!name) {
-                alert('Adınızı daxil edin!');
+                alert('Lütfen bir ad girin!');
                 return;
             }
-            myData.name = name;
-            myData.id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-            showScreen(2);
-            loadGames();
+            currentPlayer = name;
+            document.getElementById('displayPlayerName').textContent = currentPlayer;
+            showScreen('lobbyScreen');
         }
 
-        function loadGames() {
-            db.ref('games').on('value', (snapshot) => {
-                const list = document.getElementById('gamesList');
-                const games = snapshot.val();
-                
-                if (!games || Object.keys(games).length === 0) {
-                    list.innerHTML = '<p style="color: #aaa; text-align: center;">Hazırda oyun yoxdur</p>';
+        // 2️⃣ Yeni Oyun Oluştur
+        function createNewGame() {
+            const newGameCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+            currentGameCode = newGameCode;
+            gameChips = playerChips;
+
+            db.ref(`games/${newGameCode}`).set({
+                code: newGameCode,
+                createdBy: currentPlayer,
+                players: [currentPlayer],
+                pot: 0,
+                status: 'waiting',
+                currentTurn: currentPlayer,
+                communityCards: [],
+                createdAt: new Date().toISOString()
+            }).then(() => {
+                startGame();
+            }).catch(error => {
+                alert('Oyun oluşturulurken hata: ' + error.message);
+            });
+        }
+
+        // 3️⃣ Oyuna Katıl
+        function joinGame() {
+            const code = document.getElementById('gameCode').value.toUpperCase();
+            if (!code) {
+                alert('Oyun kodunu girin!');
+                return;
+            }
+
+            db.ref(`games/${code}`).once('value', snapshot => {
+                if (!snapshot.exists()) {
+                    alert('Oyun bulunamadı!');
                     return;
                 }
 
-                list.innerHTML = '';
-                Object.keys(games).forEach(gameId => {
-                    const game = games[gameId];
-                    if (game.gameStatus === 'waiting' && game.playerCount < 6) {
-                        const item = document.createElement('div');
-                        item.className = 'game-item';
-                        item.textContent = `Oyun ${gameId.substring(0, 6)} - ${game.playerCount}/6 oyunçu`;
-                        item.onclick = () => joinGame(gameId);
-                        list.appendChild(item);
-                    }
+                currentGameCode = code;
+                gameChips = playerChips;
+
+                db.ref(`games/${code}/players`).push(currentPlayer).then(() => {
+                    startGame();
+                }).catch(error => {
+                    alert('Oyuna katılırken hata: ' + error.message);
                 });
             });
         }
 
-        function screen2_createGame() {
-            const gameId = 'game_' + Date.now();
-            const gameData = {
-                gameStatus: 'waiting',
-                playerCount: 1,
-                potAmount: 0,
-                activePlayerIndex: 0,
-                round: 'pre-flop',
-                players: {
-                    [myData.id]: { name: myData.name, chips: 1000 }
+        // 4️⃣ Oyunu Başlat
+        function startGame() {
+            showScreen('gameScreen');
+            document.getElementById('gameCodeDisplay').textContent = currentGameCode;
+            document.getElementById('yourChips').textContent = gameChips;
+            loadGameData();
+        }
+
+        // 5️⃣ Oyun Verilerini Yükle ve Dinle
+        function loadGameData() {
+            if (!currentGameCode) return;
+
+            db.ref(`games/${currentGameCode}`).on('value', snapshot => {
+                if (!snapshot.exists()) return;
+                
+                gameData = snapshot.val();
+
+                // Oyunçuları Göster
+                displayPlayers();
+
+                // Topluluk Kartlarını Göster
+                if (gameData.communityCards && gameData.communityCards.length > 0) {
+                    communityCards = gameData.communityCards;
+                    displayCommunityCards();
                 }
-            };
-            
-            db.ref('games/' + gameId).set(gameData).then(() => {
-                joinGame(gameId);
+
+                // Pot Göster
+                document.getElementById('potDisplay').textContent = gameData.pot || 0;
+
+                // Sıra Göster
+                document.getElementById('currentTurn').textContent = gameData.currentTurn || '-';
             });
         }
 
-        function joinGame(gameId) {
-            myData.gameId = gameId;
-            
-            db.ref('games/' + gameId + '/players/' + myData.id).set({
-                name: myData.name,
-                chips: 1000
-            });
-
-            db.ref('games/' + gameId + '/playerCount').set(db.ref('games/' + gameId + '/players').orderByChild('.').limitToLast(1), (snapshot) => {
-                const count = snapshot.numChildren() || 1;
-                db.ref('games/' + gameId + '/playerCount').set(count);
-            });
-
-            showScreen(3);
-            watchGame(gameId);
-        }
-
-        function watchGame(gameId) {
-            db.ref('games/' + gameId).on('value', (snapshot) => {
-                const game = snapshot.val();
-                if (!game) return;
-
-                updateGameUI(game);
-            });
-        }
-
-        function updateGameUI(game) {
-            document.getElementById('potAmount').textContent = game.potAmount || 0;
-            document.getElementById('gameStatus').textContent = 'Raund: ' + (game.round || 'pre-flop');
-
-            // Kartları göstər
-            const myCards = game.myCards || [];
-            const commCards = game.communityCards || [];
-
-            document.getElementById('myCards').innerHTML = myCards.length > 0 
-                ? myCards.map(c => `<div class="card">${c}</div>`).join('')
-                : '<p style="color: #fff;">Kartları gözləyin...</p>';
-
-            document.getElementById('communityCards').innerHTML = commCards.length > 0
-                ? commCards.map(c => `<div class="card">${c}</div>`).join('')
-                : '<p style="color: #fff;">Dəstə boşdur</p>';
-
-            // Oyunçuları göstər
-            const players = game.players || {};
+        // 6️⃣ Oyunçuları Ekrana Yazdır
+        function displayPlayers() {
             const playersList = document.getElementById('playersList');
             playersList.innerHTML = '';
 
-            Object.keys(players).forEach((pId, idx) => {
-                const p = players[pId];
-                const isActive = idx === game.activePlayerIndex;
-                const box = document.createElement('div');
-                box.className = 'player-box' + (isActive ? ' active' : '');
-                box.innerHTML = `
-                    <div class="player-name">${p.name}</div>
-                    <div class="player-chips">💰 ${p.chips}</div>
-                `;
-                playersList.appendChild(box);
-            });
-
-            // Düymələri göstər
-            updateButtons(game);
-        }
-
-        function updateButtons(game) {
-            const buttons = document.getElementById('actionButtons');
-            const players = Object.keys(game.players || {});
-            const isMyTurn = players[game.activePlayerIndex] === myData.id;
-
-            if (!isMyTurn) {
-                buttons.innerHTML = '<p style="color: #fff;">Digər oyunçunun növbəsi...</p>';
-                return;
+            if (gameData.players && gameData.players.length > 0) {
+                gameData.players.forEach(player => {
+                    const playerChipsAmount = gameData[player + '_chips'] || playerChips;
+                    const playerDiv = document.createElement('div');
+                    playerDiv.className = 'player-item';
+                    playerDiv.innerHTML = `
+                        <span class="player-name">${player} ${gameData.currentTurn === player ? '⭐' : ''}</span>
+                        <span class="player-chips">${playerChipsAmount} 🪙</span>
+                    `;
+                    playersList.appendChild(playerDiv);
+                });
             }
-
-            buttons.innerHTML = `
-                <button onclick="playerAction('fold')">FOLD</button>
-                <button onclick="playerAction('check')">CHECK</button>
-                <button onclick="playerAction('call')">CALL</button>
-                <button onclick="playerAction('raise')">RAISE</button>
-            `;
         }
 
-        function playerAction(action) {
-            if (!myData.gameId) return;
-            
-            const timestamp = Date.now();
-            db.ref('games/' + myData.gameId + '/lastAction').set({
-                playerId: myData.id,
-                action: action,
-                timestamp: timestamp
-            });
-
-            // Sonrakı oyunçuya keç
-            db.ref('games/' + myData.gameId + '/activePlayerIndex').transaction((current) => {
-                const players = Object.keys(db.ref('games/' + myData.gameId + '/players').get().val() || {});
-                return (current + 1) % players.length;
+        // 7️⃣ Topluluk Kartlarını Göster
+        function displayCommunityCards() {
+            const cardsDiv = document.getElementById('communityCards');
+            cardsDiv.innerHTML = '';
+            communityCards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card-item';
+                cardElement.textContent = card;
+                cardsDiv.appendChild(cardElement);
             });
         }
 
-        function screen3_leave() {
-            if (myData.gameId) {
-                db.ref('games/' + myData.gameId + '/players/' + myData.id).remove();
-                myData.gameId = null;
-            }
-            showScreen(2);
-            loadGames();
+        // 8️⃣ Oyuncu Hareketleri
+        function playerFold() {
+            savePlayerAction('fold');
+            alert('Pas geçtin!');
         }
 
-        function screen2_logout() {
-            myData = { name: null, id: null, gameId: null };
-            document.getElementById('playerName').value = '';
-            showScreen(1);
-        }
-    </script>
-</body>
-</html>
-
+        function playerCheck() {
+            save
